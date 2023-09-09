@@ -1,0 +1,43 @@
+<div class="row my-5">
+    <div class="col1">
+        <h1 class="text-center">도서검색 페이지</h1>
+        <div id="div_books">
+
+        </div>
+    </div>
+</div>
+<script type="x-handlebars-template" id="temp_books">
+    <table class="table">
+    {{#each documents}}
+        <tr>
+            <td><img src="{{thumbnail}}" width="50"></td>
+            <td><a href="{{url}}">{{title}}</a></td>
+            <td>{{authors}}</td>
+            <td>{{price}}</td>
+        </tr>
+    {{/each}}
+    </table>
+</script>
+<script>
+    getBooks();
+    // 도서검색 데이터 불러오기
+    function getBooks() {
+        $.ajax({
+            type: "get",
+            url: "https://dapi.kakao.com/v3/search/book?target=title",
+            headers: {
+                "Authorization": "KakaoAK d613f686f5afd3c2407f5af2bc0c4cc1"
+            },
+            data: {
+                query: "자바",
+                page: 1,
+                size: 5
+            },
+            success: function(data) {
+                console.log(data);
+                let temp=Handlebars.compile($("#temp_books").html());
+                $("#div_books").html(temp(data));
+            }
+        })
+    }
+</script>
