@@ -1,5 +1,99 @@
 <div class="row my-5">
-    <div class="col1">
-        <h1 class="text-center">홈페이지 입니다.</h1>
+    <div class="col">
+        <div class="row mb-2 justify-content-end">
+            <form name="frm" class="col-6 col-md-4 col-lg-3">
+                <div class="input-group">
+                    <input name="query" class="form-control" value="자바">
+                    <button class="btn btn-primary">검색</button>
+                </div>
+            </form>
+        </div>
+        <!-- 검색결과 출력 -->
+        <div id="div_books" class="row"></div>
+        <div class="text-center">
+            <button id="prev" class="btn btn-primary">이전</button>
+            <span id="span_page" class="mx-3">1</span>
+            <button id="next" class="btn btn-primary">다음</button>
+        </div>
     </div>
 </div>
+
+<!-- 도서정보 출력 템플릿 -->
+<script type="x-handlebars-template" id="temp_books">
+    {{#each documents}}
+        <div class="col-6 col-md-4 col-lg-2 mb-2">
+            <div class="card">
+                <div class="card-body">
+                    <a href="{{url}}">
+                        <img src="{{thumbnail}}" width="90%">
+                    </a>
+                    <div class="ellipsis text-center">{{title}}</div>
+                </div>
+                <div class="card-footer">
+                    {{price}}원
+                </div>
+            </div>
+        </div>
+    {{/each}}
+</script>
+
+<script>
+    let query=$(frm.query).val();
+    let page=1;
+
+    $(frm).on("submit", function(e) {
+        e.preventDefault();
+        query=$(frm.query).val();
+        page = 1;
+        last = 1;
+        getBooks();
+    });
+    // 다음 버튼을 클릭한 경우
+    $("#next").on("click", function() {
+        page++;
+        getBooks();
+    });
+
+    // 이전 버튼을 클릭한 경우
+    $("#prev").on("click", function() {
+        page--;
+        getBooks();
+    });
+
+    getBooks();
+    // 도서검색 데이터 불러오기
+    function getBooks() {
+        $.ajax({
+            type: "get",
+            url: "https://dapi.kakao.com/v3/search/book?target=title",
+            headers: {
+                "Authorization": "KakaoAK d613f686f5afd3c2407f5af2bc0c4cc1"
+            },
+            data: {
+                query: query,
+                page: page,
+                size: 6
+            },
+            success: function(data) {
+                console.log(data);
+                let temp = Handlebars.compile($("#temp_books").html());
+                let last = 1;
+                $("#div_books").html(temp(data));
+                if(data.meta.total_count == 0) {
+                    page = 0;
+                    
+                }
+                else if(data.meta.total_count%6 >= 1) {
+                    last = Math.ceil(data.meta.total_count/6);
+                } else {
+                    last = data.meta.total_count/6;
+                }
+                $("#span_page").html(page + "/" + last);
+                if(page <= 1) $("#prev").attr("disabled", true);
+                else $("#prev").attr("disabled", false);
+                if(data.meta.is_end) $("#next").attr("disabled", true);
+                else $("#next").attr("disabled", false);
+            }
+        })
+    }
+</script>

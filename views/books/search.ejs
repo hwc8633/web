@@ -1,8 +1,18 @@
 <div class="row my-5">
     <div class="col1">
-        <h1 class="text-center">도서검색 페이지</h1>
-        <div id="div_books">
-
+        <div class="row mb-2 justify-content-end">
+            <form name="frm" class="col-6 col-md-4 col-lg-3">
+                <div class="input-group">
+                    <input name="query" class="form-control" value="자바">
+                    <button class="btn btn-primary">검색</button>
+                </div>
+            </form>
+        </div>
+        <div id="div_books"></div>
+        <div class="text-center">
+            <button id="prev" class="btn btn-primary">이전</button>
+            <span id="span_page" class="mx-3">1</span>
+            <button id="next" class="btn btn-primary">다음</button>
         </div>
     </div>
 </div>
@@ -10,7 +20,7 @@
     <table class="table">
     {{#each documents}}
         <tr>
-            <td><img src="{{thumbnail}}" width="50"></td>
+            <td><img src="{{thumbnail}}" width="70"></td>
             <td><a href="{{url}}">{{title}}</a></td>
             <td>{{authors}}</td>
             <td>{{price}}</td>
@@ -19,24 +29,60 @@
     </table>
 </script>
 <script>
+    let query=$(frm.query).val();
+    let page=1;
+
+    $(frm).on("submit", function(e) {
+        e.preventDefault();
+        query=$(frm.query).val();
+        page = 1;
+        last = 1;
+        getBooks();
+    });
+    // 다음 버튼을 클릭한 경우
+    $("#next").on("click", function() {
+        page++;
+        getBooks();
+    });
+
+    // 이전 버튼을 클릭한 경우
+    $("#prev").on("click", function() {
+        page--;
+        getBooks();
+    });
     getBooks();
     // 도서검색 데이터 불러오기
     function getBooks() {
         $.ajax({
-            type: "get",
+            type: "get",        
             url: "https://dapi.kakao.com/v3/search/book?target=title",
             headers: {
                 "Authorization": "KakaoAK d613f686f5afd3c2407f5af2bc0c4cc1"
             },
             data: {
-                query: "자바",
-                page: 1,
+                query: query,
+                page: page,
                 size: 5
             },
             success: function(data) {
                 console.log(data);
-                let temp=Handlebars.compile($("#temp_books").html());
+                let temp = Handlebars.compile($("#temp_books").html());
+                let last = 1;
                 $("#div_books").html(temp(data));
+                if(data.meta.total_count == 0) {
+                    page = 0;
+                    
+                }
+                else if(data.meta.total_count%6 >= 1) {
+                    last = Math.ceil(data.meta.total_count/5);
+                } else {
+                    last = data.meta.total_count/5;
+                }
+                $("#span_page").html(page + "/" + last);
+                if(page <= 1) $("#prev").attr("disabled", true);
+                else $("#prev").attr("disabled", false);
+                if(data.meta.is_end) $("#next").attr("disabled", true);
+                else $("#next").attr("disabled", false);
             }
         })
     }
