@@ -20,17 +20,37 @@
     <table class="table">
     {{#each documents}}
         <tr>
-            <td><img src="{{thumbnail}}" width="70"></td>
-            <td><a href="{{url}}">{{title}}</a></td>
+            <td><img src="{{chkImage thumbnail}}" width="70"></td>
+            <td>{{title}}</td>
             <td>{{authors}}</td>
-            <td>{{price}}</td>
+            <td>{{fmtPrice price}}</td>
+            <td><button class="btn btn-primary" index="{{@index}}">도서정보</button></td>
         </tr>
+        <%-include('modal.ejs')%>
     {{/each}}
     </table>
 </script>
 <script>
+    Handlebars.registerHelper("chkImage", function(image) {
+        if(image) {
+            return image;
+        } else {
+            return "https://via.placeholder.com/120x170";
+        }
+    })
+
+    Handlebars.registerHelper("fmtPrice", function(price) {
+        if(price) return price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',') + '원';
+    })
+</script>
+<script>
     let query=$(frm.query).val();
     let page=1;
+
+    $("#div_books").on("click", ".btn", function() {
+        let index=$(this).attr("index");
+        $("#modal" + index).modal("show");
+    })
 
     $(frm).on("submit", function(e) {
         e.preventDefault();
