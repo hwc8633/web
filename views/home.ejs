@@ -2,6 +2,11 @@
     #div_books img {
         cursor: pointer;
     }
+
+    #div_books .bi-cart-plus {
+        cursor: pointer;
+        color: green;
+    }
 </style>
 
 <div class="row my-5">
@@ -35,6 +40,7 @@
                 </div>
                 <div class="card-footer">
                     {{fmtPrice price}}
+                    <i class="bi bi-cart-plus float-end" book="{{book @this}}"></i>
                 </div>
             </div>
         </div>
@@ -53,10 +59,39 @@
     Handlebars.registerHelper("fmtPrice", function(price) {
         if(price) return price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',') + '원';
     })
+
+    Handlebars.registerHelper("book", function(book) {
+        return JSON.stringify(book);
+    })
 </script>
-<script>
+<script type="module">
+    import { app } from "/javascripts/firebaseInit.js";
+    import { getDatabase, ref, set, get } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-database.js";
+
+    const db = getDatabase(app);
+
     let query=$(frm.query).val();
     let page=1;
+    let last=1;
+
+    $("#div_books").on("click", ".bi-cart-plus", async function() {
+        if(!sessionStorage.getItem("email")) {
+            location.href="/users/login";
+        } else {
+            const book=JSON.parse($(this).attr("book"));
+            console.log(book);
+            const ref_book = `cart/${sessionStorage.getItem("uid")}/${book.isbn}`;
+
+            const snapshot = await get(ref(db, ref_book));
+            if(snapshot.val()) {
+                alert("이미 장바구니에 담긴 도서입니다.");
+            } else {
+                if(!confirm("장바구니에 저장합니다.")) return;
+                set(ref(db, ref_book), book);
+                alert("장바구니에 추가되었습니다.");
+            }
+        }
+    })
 
     $("#div_books").on("click", "img", function() {
         let index=$(this).attr("index");

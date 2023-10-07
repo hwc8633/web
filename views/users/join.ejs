@@ -1,11 +1,6 @@
-<style>
-    form span {
-        width: 120px;
-    }
-</style>
 <div class="row my-5 justify-content-center">
     <div class="col-6">
-        <h1 class="text-center">LOGIN</h1>
+        <h1 class="text-center">회원가입</h1>
         <form name="frm" class="card p-3">
             <div class="input-group mb-3">
                 <span class="input-group-text">E-mail</span>
@@ -15,46 +10,38 @@
                 <span class="input-group-text">Password</span>
                 <input name="password" class="form-control" type="password" value="test1234">
             </div>
-            <button class="btn btn-primary w-100">LOGIN</button>
+            <button class="btn btn-primary w-100">회원가입</button>
         </form>
-        <div class="text-end mt-2">
-            <a href="/users/join">회원가입</a>
-        </div>
     </div>
 </div>
 <script type="module">
     import { app } from "/javascripts/firebaseInit.js";
-    import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-auth.js";
+    import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-auth.js";
     const auth = getAuth(app);
 
     $(frm).on("submit", function(e) {
         e.preventDefault();
+        // Validation Check
         const email=$(frm.email).val();
         const password=$(frm.password).val();
-        
-        if(email == "") {
-            alert("Email을 입력하세요!");
-            $(frm.email).focus();
-        } else if(password == "") {
-            alert("비밀번호를 입력하세요!");
-            $(frm.password).focus();
+
+        if(email.includes("@") == false) {
+            alert("올바른 이메일 형식이 아닙니다.");
+        } else if(password.length < 8) {
+            alert("비밀번호는 8자리 이상 입력해주세요.");
         } else {
-            signInWithEmailAndPassword(auth, email, password)
+            createUserWithEmailAndPassword(auth, email, password)
                 .then((success) => {
                     // Signed in 
-                    const user = success.user;
-                    console.log(success);
-                    sessionStorage.setItem("email", email);
-                    sessionStorage.setItem("uid", success.user.uid);
-                    location.href="/";
-                    // ...
+                    // console.log(success);
+                    alert("회원가입 성공");
+                    location.href("/users/login");
                 })
                 .catch((error) => {
                     const errorCode = error.code;
                     const errorMessage = error.message;
-                    console.log(error);
                     alert(errorMessage);
                 });
         }
-    })
+    });
 </script>
