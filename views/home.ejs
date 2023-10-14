@@ -74,6 +74,7 @@
     let page=1;
     let last=1;
 
+    // 장바구니
     $("#div_books").on("click", ".bi-cart-plus", async function() {
         if(!sessionStorage.getItem("email")) {
             location.href="/users/login";
@@ -93,6 +94,7 @@
         }
     })
 
+    // 이미지 클릭
     $("#div_books").on("click", "img", function() {
         let index=$(this).attr("index");
         $("#modal" + index).modal("show");
