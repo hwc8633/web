@@ -26,43 +26,44 @@
             <td class="place">{{place_name}}</td>
             <td>{{address_name}}</td>
             <td class="phone">{{phone}}</td>
-            <td><button class="btn btn-primary location" x="{{x}}" y="{{y}}">위치보기</button></td>
+            <td><button class="btn btn-sm btn-primary" local="{{toString @this}}">즐겨찾기</button></td>
         </tr>     
     {{/each}}
     </tr>
 </script>
-
 <script>
+    Handlebars.registerHelper("toString", function(local) {
+        return JSON.stringify(local);
+    });
+</script>
+
+<script type="module">
+    import { app } from "/javascripts/firebaseInit.js";
+    import { getDatabase, ref, onValue, remove, set, get } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-database.js";
+
+    const db = getDatabase(app);
+
+    let temp;
     let page=1;
     let query=$(frm.query).val();
     getLocals();
 
-    $("#div_locals").on("click", ".location", function(){
-        let x=$(this).attr("x");
-        let y=$(this).attr("y");
-        var container = document.getElementById('map');
-        var options = { 
-	        center: new kakao.maps.LatLng(y, x),
-	        level: 3
-        };
-        var map = new kakao.maps.Map(container, options);
-        var markerPosition  = new kakao.maps.LatLng(y, x);
-        var marker = new kakao.maps.Marker({ 
-            position: markerPosition
-        });
-        marker.setMap(map);
-
-        let row = $(this).parent().parent();
-        let place = row.find(".place").text();
-        let phone = row.find(".phone").text();
-        var str ="<div style='padding:5px;font-size:12px;'>" + place + "<br>" + phone + "</div>";
-        var info=new kakao.maps.InfoWindow({ content:str });
-        kakao.maps.event.addListener(marker, "mouseover", function() { 
-            info.open(map, marker); 
-        });
-        kakao.maps.event.addListener(marker, "mouseout", function() {
-            info.close(map, marker); 
-        });
+    $("#div_locals").on("click", ".btn-sm", async function() {
+        if(!sessionStorage.getItem("email")) {
+            sessionStorage.setItem("target", "/locals");
+            location.href='/users/login';
+        } else {
+            const local=JSON.parse($(this).attr("local"));
+            console.log(local);
+            const ref_local=`favorite/${sessionStorage.getItem("uid")}/${local.id}`;
+            const snapshot=await get(ref(db, ref_local));
+            if(snapshot.val()) {
+                alert("이미 등록되었습니다.");
+            } else {
+                await set(ref(db, ref_local), local);
+                alert("등록되었습니다.");
+            }
+        }
     });
 
     $("#next").on("click", function(){

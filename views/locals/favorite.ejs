@@ -1,0 +1,20 @@
+<div class="my-5">
+    <h1 class="text-center mb-5">즐겨찾기</h1>
+</div>
+
+<script type="module">
+    import { app } from "/javascripts/firebaseInit.js";
+    import { getDatabase, ref, onValue, remove } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-database.js";
+
+    const db = getDatabase(app);
+    const ref_local = `favorite/${sessionStorage.getItem("uid")}`;
+
+    onValue(ref(db, ref_local), snapshot=>{
+        let rows=[];
+        snapshot.forEach(row=>{
+            // console.log(row.val());
+            rows.push(row.val());
+        });
+        console.log(rows);
+    });
+</script>
