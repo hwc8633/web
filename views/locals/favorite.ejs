@@ -10,7 +10,7 @@
             <td>{{place_name}}</td>
             <td>{{address_name}}</td>
             <td>{{phone}}</td>
-            <td><button class="btn btn-danger btn-sm">삭제</button></td>
+            <td><button class="btn btn-danger btn-sm" id="{{id}}">삭제</button></td>
         </tr>
         {{/each}}
 </script>
@@ -29,5 +29,12 @@
         });
         const temp=Handlebars.compile($("#temp_favorite").html());
         $("#div_favorite").html(temp(rows));
+    });
+
+    $("#div_favorite").on("click", "button", function() {
+        const id=$(this).attr("id");
+        if(!confirm(`${id}번 즐겨찾기를 삭제합니다.`)) return;
+        const ref_favorite = ref(db, `favorite/${sessionStorage.getItem("uid")}/${id}`);
+        remove(ref_favorite);
     });
 </script>
