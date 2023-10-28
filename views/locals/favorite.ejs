@@ -1,7 +1,19 @@
 <div class="my-5">
     <h1 class="text-center mb-5">즐겨찾기</h1>
+    <div id="div_favorite"></div>
 </div>
-
+<script id="temp_favorite" type="x-handlebars-template">
+    <table class="table table-striped table-hover">
+        {{#each .}}
+        <tr>
+            <td>{{id}}</td>
+            <td>{{place_name}}</td>
+            <td>{{address_name}}</td>
+            <td>{{phone}}</td>
+            <td><button class="btn btn-danger btn-sm">삭제</button></td>
+        </tr>
+        {{/each}}
+</script>
 <script type="module">
     import { app } from "/javascripts/firebaseInit.js";
     import { getDatabase, ref, onValue, remove } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-database.js";
@@ -15,6 +27,7 @@
             // console.log(row.val());
             rows.push(row.val());
         });
-        console.log(rows);
+        const temp=Handlebars.compile($("#temp_favorite").html());
+        $("#div_favorite").html(temp(rows));
     });
 </script>
