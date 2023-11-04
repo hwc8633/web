@@ -1,0 +1,80 @@
+<div class="my-5">
+    <h1 class="text-center mb-5">마이페이지</h1>
+    <div class="row justify-content-center">
+        <div class="col-8">
+            <form name="frm" class="card p-3">
+                <div class="input-group mb-2">
+                    <span class="input-group-text">이름</span>
+                    <input name="name" class="form-control"/>
+                </div>
+                <div class="input-group mb-2">
+                    <span class="input-group-text">전화</span>
+                    <input name="phone" class="form-control"/>
+                </div>
+                <div class="input-group mb-2">
+                    <span class="input-group-text">주소</span>
+                    <input name="address" class="form-control" readonly/>
+                    <button id="btn-search" type="button" class="btn btn-primary">검색</button>
+                </div>
+                <div class="text-center mt-3">
+                    <button class="btn btn-primary px-5">저장</button>
+                    <button type="reset" class="btn btn-secondary px-5">취소</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<script type="module">
+    import { app } from "/javascripts/firebaseInit.js";
+    import { getFirestore, setDoc, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-firestore.js";
+    const db = getFirestore(app);
+    // const storage=getStorage(app);
+    const uid=sessionStorage.getItem("uid");
+    const email=sessionStorage.getItem("email");
+
+    $(window).on("load", function() {
+        console.log(".......");
+    });
+
+    $(frm).on("submit", async function(e) {
+        e.preventDefault();
+        const name=$(frm.name).val();
+        const phone=$(frm.phone).val();
+        const address=$(frm.address).val();
+        if(name == ""){
+            alert("이름을 입력하세요!");
+            $(frm.name).focus();
+            return;
+        }
+        if(phone == ""){
+            alert("전화번호를 입력하세요!");
+            $(frm.phone).focus();
+            return;
+        }
+        if(address == ""){
+            alert("주소를 입력하세요!");
+            return;
+        }
+        if(confirm("사용자 정보를 저장합니다.")) {
+            await setDoc(doc(db, `users/${uid}`), {
+                email:email,
+                name:name,
+                phone:phone,
+                address:address
+            });
+            alert("변경되었습니다.");
+            location.href="/";
+        }
+    });
+</script>
+<script>
+    $("#btn-search").on("click", function() {
+        new daum.Postcode({
+            oncomplete:function(data) {
+                // console.log(data);
+                const address = `${data.roadAddress} ${data.buildingName ? `(${data.buildingName})` : ''}`;
+                $(frm.address).val(address);
+            }
+        }).open();
+    })
+</script>
