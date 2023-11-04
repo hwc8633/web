@@ -1,7 +1,18 @@
+<style>
+    #photo {
+        width: 200px;
+        border-radius: 50%;
+        cursor: pointer;
+    }
+</style>
 <div class="my-5">
     <h1 class="text-center mb-5">마이페이지</h1>
     <div class="row justify-content-center">
         <div class="col-8">
+            <div class="text-center my-5">
+                <img src="https://via.placeholder.com/200x200" id="photo"/>
+                <input type="file" id="file" style="display: none;"/>
+            </div>
             <form name="frm" class="card p-3">
                 <div class="input-group mb-2">
                     <span class="input-group-text">이름</span>
@@ -32,8 +43,23 @@
     const uid=sessionStorage.getItem("uid");
     const email=sessionStorage.getItem("email");
 
-    $(window).on("load", function() {
-        console.log(".......");
+    let user;
+    $(window).on("load", async function() {
+        const snapshot = await getDoc(doc(db, `users/${uid}`));
+        if(snapshot.data()) {
+            user=snapshot.data();
+            $(frm.name).val(user.name);
+            $(frm.phone).val(user.phone);
+            $(frm.address).val(user.address);
+        }
+    });
+
+    $("#file").on("change", function(e) {
+        $("#photo").attr("src", URL.createObjectURL(e.target.files[0]));
+    });
+
+    $("#photo").on("click", function() {
+        $("#file").click();
     });
 
     $(frm).on("submit", async function(e) {
