@@ -1,11 +1,52 @@
 <div class="my-5">
     <h1 class="text-center mb-5">게시판</h1>
     <div class="text-end">
-        <button id="btn-insert" class="btn btn-primary">작성</button>
+        <button id="btn-insert" class="btn btn-primary mb-3">작성</button>
     </div>
+    <div id="div_posts"></div>
 </div>
 
-<script>
+<script id="temp_posts" type="x-handlebars-template">
+    <table class="table table-striped table-hover">
+        <tr class="text-center">
+            <td>제목</td>
+            <td>작성자</td>
+            <td>작성일</td>
+        </tr>
+        {{#each .}}
+            <tr>
+                <td>{{title}}</td>
+                <td>{{email}}</td>
+                <td>{{date}}</td>
+            </tr>
+        {{/each}}
+    </table>
+</script>
+
+<script type="module">
+    import { app } from "/javascripts/firebaseInit.js";
+    import { getFirestore,collection } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-firestore.js";
+    import { query,orderBy,getDocs,where,doc } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-firestore.js";
+    const db = getFirestore(app);
+    const email=sessionStorage.getItem('email');
+
+    getPosts();
+    async function getPosts() {
+        const q = query(collection(db, 'posts'), orderBy("date", "desc"));
+        const snapshot = await getDocs(q);
+
+        let rows = [];
+        // console.log(snapshot.docs);
+        snapshot.docs.forEach(doc => {
+            const row = {id:doc.id, ...doc.data()}
+            // console.log(row);
+            rows.push(row);
+        });
+        // console.log(rows);
+        const temp = Handlebars.compile($("#temp_posts").html());
+        $("#div_posts").html(temp(rows));
+    }
+
     $("#btn-insert").on("click", function() {
         if(!sessionStorage.getItem("email")) {
             location.href = "/users/login";
