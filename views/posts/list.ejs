@@ -1,0 +1,17 @@
+<div class="my-5">
+    <h1 class="text-center mb-5">게시판</h1>
+    <div class="text-end">
+        <button id="btn-insert" class="btn btn-primary">작성</button>
+    </div>
+</div>
+
+<script>
+    $("#btn-insert").on("click", function() {
+        if(!sessionStorage.getItem("email")) {
+            location.href = "/users/login";
+            sessionStorage.setItem("target", "/posts/insert");
+        } else {
+            location.href = "/posts/insert";
+        }
+    });
+</script>

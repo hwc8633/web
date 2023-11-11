@@ -4,6 +4,10 @@
         border-radius: 50%;
         cursor: pointer;
     }
+
+    #file {
+        display: none;
+    }
 </style>
 <div class="my-5">
     <h1 class="text-center mb-5">마이페이지</h1>
@@ -11,7 +15,10 @@
         <div class="col-8">
             <div class="text-center my-5">
                 <img src="https://via.placeholder.com/200x200" id="photo"/>
-                <input type="file" id="file" style="display: none;"/>
+                <input type="file" id="file"/>
+                <div>
+                    <button id="btn-photo" class="btn btn-primary px-5 mt-2">이미지저장</button>
+                </div>
             </div>
             <form name="frm" class="card p-3">
                 <div class="input-group mb-2">
@@ -38,8 +45,9 @@
 <script type="module">
     import { app } from "/javascripts/firebaseInit.js";
     import { getFirestore, setDoc, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-firestore.js";
+    import { getStorage, uploadBytes, ref, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-storage.js";
     const db = getFirestore(app);
-    // const storage=getStorage(app);
+    const storage=getStorage(app);
     const uid=sessionStorage.getItem("uid");
     const email=sessionStorage.getItem("email");
 
@@ -51,6 +59,21 @@
             $(frm.name).val(user.name);
             $(frm.phone).val(user.phone);
             $(frm.address).val(user.address);
+            $("#photo").attr("src", user.photo);
+        }
+    });
+
+    $("#btn-photo").on("click", async function() {
+        if($("#file").val() == "") {
+            alert("저장할 사진을 선택하세요.");
+        } else {
+            if(confirm("선택한 이미지를 저장합니다.")) {
+                // save image
+                const snapshot = await uploadBytes(ref(storage, `/photo/${Date.now()}.jpg`), $("#file")[0].files[0]);
+                const url = await getDownloadURL(snapshot.ref);
+                await setDoc(doc(db, `users/${uid}`), {...user, photo:url});
+                alert("이미지가 변경되었습니다.");
+            }
         }
     });
 
@@ -83,6 +106,7 @@
         }
         if(confirm("사용자 정보를 저장합니다.")) {
             await setDoc(doc(db, `users/${uid}`), {
+                ...user,
                 email:email,
                 name:name,
                 phone:phone,
