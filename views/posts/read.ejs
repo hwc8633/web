@@ -1,0 +1,28 @@
+<div class="my-5">
+    <h1 class="text-center mb-5">게시글 정보</h1>
+    <div id="div_post"></div>
+</div>
+
+<script id="temp_post" type="x-handlebars-template">
+    <div class="card">
+        <div class="card-body">
+            <h5>{{title}}</h5>
+            <hr>
+            <div>{{body}}</div>
+        </div>
+        <div class="card-footer">
+            <small>작성자: {{email}}</small>
+            <small>작성일: {{date}}</small>
+    </div>
+</script>
+
+<script type="module">
+    import { app } from "/javascripts/firebaseInit.js";
+    import { getFirestore, setDoc, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-firestore.js";
+    const db = getFirestore(app);
+    const id = "<%= id %>";
+    const snapshot = await getDoc(doc(db, `posts/${id}`));
+    // console.log(snapshot.data());
+    const temp = Handlebars.compile($("#temp_post").html());
+    $("#div_post").html(temp(snapshot.data()));
+</script>

@@ -1,0 +1,42 @@
+<div class="my-5">
+    <h1 class="text-center mb-5">게시글 작성</h1>
+    <form name="frm">
+        <input name="title" placeholder="제목을 입력하세요." class="form-control mb-2"/>
+        <textarea name="body" rows="10" class="form-control" placeholder="내용을 입력하세요."></textarea>
+        <div class="text-center my-3">
+            <button class="btn btn-primary px-5">등록</button>
+            <button class="btn btn-secondary px-5" type="reset">취소</button>
+        </div>
+    </form>
+</div>
+
+<script type="module">
+    import { app } from "/javascripts/firebaseInit.js";
+    import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-firestore.js";
+    const db = getFirestore(app);
+
+    $(frm).on("submit", async function(e) {
+        e.preventDefault();
+        const title = $(frm.title).val();
+        const body = $(frm.body).val();
+        if(title == "") {
+            alert("제목을 입력하세요.");
+            $(frm.title).focus();
+            return;
+        }
+        if(body == "") {
+            alert("내용을 입력하세요.");
+            $(frm.body).focus();
+            return;
+        }
+        if(confirm("게시글을 등록합니다.")) {
+            // 게시글 등록
+            const email = sessionStorage.getItem("email");
+            const date = moment(new Date()).format("YYYY-MM-DD HH:mm:ss");
+            const data = {title, body, email, date};
+            await addDoc(collection(db, "posts"), data);
+            alert("게시글이 등록되었습니다.");
+            location.href="/posts";
+        }
+    });
+</script>
